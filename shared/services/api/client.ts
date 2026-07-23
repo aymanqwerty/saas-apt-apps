@@ -1,3 +1,4 @@
+import { AUTH_COOKIE_NAME } from "@/shared/constants/auth";
 import type { ApiResponse } from "@/shared/types/api";
 
 const API_BASE_URL =
@@ -5,6 +6,20 @@ const API_BASE_URL =
 
 // API origin without the /api/v1 suffix — used for media URLs.
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, "");
+
+/**
+ * Read the auth token from the (non-httpOnly) first-party cookie in the browser.
+ * Returns null on the server (no `document`) — server callers pass their own
+ * Authorization header instead. Lets client fetches authenticate a cross-domain
+ * API with a Bearer header rather than relying on cross-site cookies.
+ */
+function getClientToken(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${AUTH_COOKIE_NAME}=`));
+  return match ? decodeURIComponent(match.slice(match.indexOf("=") + 1)) : null;
+}
 
 export class ApiError extends Error {
   readonly status: number;
@@ -38,13 +53,21 @@ export async function apiFetch<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+  // Attach the bearer token on the client unless the caller already set one
+  // (server components pass their own Authorization header).
+  if (!headers.Authorization && !headers.authorization) {
+    const token = getClientToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
+    headers,
   });
 
   return handleResponse<T>(response);
@@ -55,10 +78,15 @@ export async function apiUpload<T>(
   path: string,
   formData: FormData,
 ): Promise<T> {
+  const headers: Record<string, string> = {};
+  const token = getClientToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     credentials: "include",
     body: formData,
+    headers,
   });
 
   return handleResponse<T>(response);

@@ -20,7 +20,12 @@ const MAX_AGE_SECONDS = 60 * 60 * 24;
 export async function setSessionCookie(token: string): Promise<void> {
   const store = await cookies();
   store.set(AUTH_COOKIE_NAME, token, {
-    httpOnly: true,
+    // NOT httpOnly: client-side fetches (react-query in the browser) call the
+    // cross-domain API directly and must attach this token as a Bearer header,
+    // so JS needs to read it. The token is already exposed to JS via the login
+    // response body, so this doesn't widen the exposure. Server components read
+    // the same cookie via cookies() for SSR/route-gating.
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
