@@ -3,8 +3,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
-import { clearSessionCookie } from "@/features/authentication/actions/session";
 import { logout } from "@/shared/services/api/auth.service";
+import { clearAuthCookie } from "@/shared/lib/auth-cookie";
 
 export function useLogout() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export function useLogout() {
       } catch {
         /* ignore */
       }
-      await clearSessionCookie();
+      clearAuthCookie();
     },
     onSuccess: () => {
       queryClient.clear();
