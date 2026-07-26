@@ -12,6 +12,9 @@ export default function ProfilePage() {
     <div className="flex flex-col gap-6">
       <PageHeader description="Manage your professional information shown on your public website." />
       <ProfileForm />
+      <p className="text-muted-foreground border-t pt-6 text-center text-xs">
+        Developed and managed by Ayman Akram
+      </p>
     </div>
   );
 }

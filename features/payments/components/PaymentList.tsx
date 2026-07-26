@@ -58,6 +58,8 @@ export function PaymentList() {
   const [status, setStatus] = useState<PaymentStatus | "">("");
   const [clinicId, setClinicId] = useState("");
   const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 300);
 
@@ -65,11 +67,14 @@ export function PaymentList() {
     status: status || undefined,
     clinic_id: clinicId || undefined,
     search: debouncedSearch || undefined,
+    date_from: dateFrom || undefined,
+    date_to: dateTo || undefined,
     page,
     limit: 20,
   });
 
   const resetToFirstPage = () => setPage(1);
+  const hasDateFilter = Boolean(dateFrom || dateTo);
 
   return (
     <div className="flex flex-col gap-4">
@@ -113,6 +118,43 @@ export function PaymentList() {
             </option>
           ))}
         </select>
+        <div className="flex items-center gap-1.5">
+          <span className="text-muted-foreground text-sm">From</span>
+          <input
+            type="date"
+            className={SELECT_CLASS}
+            value={dateFrom}
+            max={dateTo || undefined}
+            onChange={(event) => {
+              setDateFrom(event.target.value);
+              resetToFirstPage();
+            }}
+          />
+          <span className="text-muted-foreground text-sm">To</span>
+          <input
+            type="date"
+            className={SELECT_CLASS}
+            value={dateTo}
+            min={dateFrom || undefined}
+            onChange={(event) => {
+              setDateTo(event.target.value);
+              resetToFirstPage();
+            }}
+          />
+        </div>
+        {hasDateFilter && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setDateFrom("");
+              setDateTo("");
+              resetToFirstPage();
+            }}
+          >
+            Clear dates
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"

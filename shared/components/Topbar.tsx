@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 
 import { LogoutButton } from "@/features/authentication/components/LogoutButton";
+import { MobileSidebar } from "@/shared/components/MobileSidebar";
 
 const TITLES: Record<string, string> = {
   "": "Dashboard",
@@ -34,8 +35,11 @@ export function Topbar({ doctorName }: { doctorName: string }) {
   const title = TITLES[segment] ?? "Dashboard";
 
   return (
-    <header className="bg-card/80 sticky top-0 z-10 flex h-16 items-center justify-between border-b px-6 backdrop-blur">
-      <h1 className="text-base font-semibold">{title}</h1>
+    <header className="bg-card/80 sticky top-0 z-10 flex h-16 items-center justify-between border-b px-4 backdrop-blur sm:px-6">
+      <div className="flex items-center gap-2">
+        <MobileSidebar />
+        <h1 className="text-base font-semibold">{title}</h1>
+      </div>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2.5">
           <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-xs font-semibold">
