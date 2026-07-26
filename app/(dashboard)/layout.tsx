@@ -1,15 +1,19 @@
 import { redirect } from "next/navigation";
 
 import { AppSidebar } from "@/shared/components/AppSidebar";
+import { DemoBanner } from "@/shared/components/DemoBanner";
 import { Topbar } from "@/shared/components/Topbar";
-import { getServerDoctor } from "@/shared/services/api/auth.server";
+import { getServerDoctor, isDemoSession } from "@/shared/services/api/auth.server";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const doctor = await getServerDoctor();
+  const [doctor, isDemo] = await Promise.all([
+    getServerDoctor(),
+    isDemoSession(),
+  ]);
   if (!doctor) {
     redirect("/login");
   }
@@ -20,6 +24,7 @@ export default async function DashboardLayout({
         <AppSidebar />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
+        {isDemo && <DemoBanner />}
         <Topbar doctorName={doctor.full_name} />
         <main className="flex-1 p-6 lg:p-8">{children}</main>
       </div>

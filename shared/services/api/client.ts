@@ -1,4 +1,11 @@
 import { AUTH_COOKIE_NAME } from "@/shared/constants/auth";
+import { isDemoToken } from "@/shared/constants/demo";
+import {
+  DEMO_READ_ONLY_MESSAGE,
+  getDemoPayload,
+  isDemoBypassPath,
+  isDemoWriteAllowed,
+} from "@/shared/services/api/demo.data";
 import type { ApiResponse } from "@/shared/types/api";
 
 const API_BASE_URL =
@@ -49,6 +56,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return body.data;
 }
 
+/** Strip the "Bearer " prefix from a caller-supplied Authorization header. */
+function tokenFromHeader(header: string): string {
+  return header.replace(/^Bearer\s+/i, "");
+}
+
 export async function apiFetch<T>(
   path: string,
   init?: RequestInit,
@@ -57,11 +69,25 @@ export async function apiFetch<T>(
     "Content-Type": "application/json",
     ...(init?.headers as Record<string, string> | undefined),
   };
-  // Attach the bearer token on the client unless the caller already set one
-  // (server components pass their own Authorization header).
-  if (!headers.Authorization && !headers.authorization) {
-    const token = getClientToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
+  // Server components pass their own Authorization header; on the client we
+  // read the bearer token from the first-party cookie.
+  const presetAuth = headers.Authorization ?? headers.authorization;
+  const token = presetAuth ? tokenFromHeader(presetAuth) : getClientToken();
+
+  // A demo session never reaches the API: reads resolve to empty payloads and
+  // writes are rejected, so the app is fully browsable with no data in it.
+  if (isDemoToken(token) && !isDemoBypassPath(path)) {
+    const method = (init?.method ?? "GET").toUpperCase();
+    if (method !== "GET" && !isDemoWriteAllowed(path)) {
+      throw new ApiError(DEMO_READ_ONLY_MESSAGE, 403, "DEMO_READ_ONLY");
+    }
+    return getDemoPayload(path) as T;
+  }
+
+  // Reaching here with a demo token means a bypassed public endpoint — send it
+  // unauthenticated rather than with the sentinel token.
+  if (!presetAuth && token && !isDemoToken(token)) {
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -80,6 +106,9 @@ export async function apiUpload<T>(
 ): Promise<T> {
   const headers: Record<string, string> = {};
   const token = getClientToken();
+  if (isDemoToken(token)) {
+    throw new ApiError(DEMO_READ_ONLY_MESSAGE, 403, "DEMO_READ_ONLY");
+  }
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const response = await fetch(`${API_BASE_URL}${path}`, {

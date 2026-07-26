@@ -7,6 +7,7 @@ import {
   loginSchema,
   type LoginFormValues,
 } from "@/features/authentication/validation/login_schema";
+import { useDemoLogin } from "@/features/authentication/hooks/useDemoLogin";
 import { useLogin } from "@/features/authentication/hooks/useLogin";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -22,6 +23,7 @@ import { ApiError } from "@/shared/services/api/client";
 
 export function LoginForm() {
   const loginMutation = useLogin();
+  const startDemo = useDemoLogin();
   const {
     register,
     handleSubmit,
@@ -96,6 +98,25 @@ export function LoginForm() {
             {loginMutation.isPending ? "Signing in..." : "Sign in"}
           </Button>
         </form>
+
+        <div className="my-5 flex items-center gap-3">
+          <span className="bg-border h-px flex-1" />
+          <span className="text-muted-foreground text-xs uppercase">or</span>
+          <span className="bg-border h-px flex-1" />
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={startDemo}
+        >
+          Explore the demo
+        </Button>
+        <p className="text-muted-foreground mt-2 text-center text-xs">
+          Browse every screen with no account. Demo sessions show no data and
+          cannot save changes.
+        </p>
       </CardContent>
     </Card>
   );
