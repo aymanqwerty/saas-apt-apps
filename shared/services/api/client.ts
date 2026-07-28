@@ -15,6 +15,20 @@ const API_BASE_URL =
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, "");
 
 /**
+ * Resolve a stored media path to a loadable URL.
+ *
+ * Storage backends return two different shapes: local disk gives a relative
+ * "/media/..." path that must be resolved against the API origin, while GCS
+ * gives an absolute "https://storage.googleapis.com/..." URL that must be used
+ * as-is. Blindly prefixing the origin turns the absolute form into a malformed
+ * URL, so every consumer goes through here instead.
+ */
+export function mediaUrl(path: string | null | undefined): string {
+  if (!path) return "";
+  return /^https?:\/\//i.test(path) ? path : `${API_ORIGIN}${path}`;
+}
+
+/**
  * Read the auth token from the (non-httpOnly) first-party cookie in the browser.
  * Returns null on the server (no `document`) — server callers pass their own
  * Authorization header instead. Lets client fetches authenticate a cross-domain

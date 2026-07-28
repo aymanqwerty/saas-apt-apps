@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { API_ORIGIN } from "@/shared/services/api/client";
+import { mediaUrl } from "@/shared/services/api/client";
 import { fetchPublicGallery } from "@/shared/services/api/public.server";
 
 export default async function GalleryPage({
@@ -30,11 +30,7 @@ export default async function GalleryPage({
             >
               {post.thumbnail ? (
                 <Image
-                  src={
-                    post.thumbnail.startsWith("http")
-                      ? post.thumbnail
-                      : `${API_ORIGIN}${post.thumbnail}`
-                  }
+                  src={mediaUrl(post.thumbnail)}
                   alt={post.title}
                   width={400}
                   height={240}

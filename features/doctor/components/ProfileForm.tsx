@@ -21,7 +21,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { API_ORIGIN, ApiError } from "@/shared/services/api/client";
+import { ApiError, mediaUrl } from "@/shared/services/api/client";
 import { uploadImage } from "@/shared/services/api/media.service";
 import type { Doctor } from "@/shared/types/doctor";
 
@@ -157,7 +157,7 @@ function ProfileFormInner({ doctor }: { doctor: Doctor }) {
         <CardContent className="flex items-center gap-4">
           {photoUrl ? (
             <Image
-              src={`${API_ORIGIN}${photoUrl}`}
+              src={mediaUrl(photoUrl)}
               alt="Profile photo"
               width={80}
               height={80}

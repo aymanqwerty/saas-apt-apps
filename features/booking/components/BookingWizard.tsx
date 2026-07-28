@@ -59,7 +59,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { cn } from "@/shared/lib/utils";
-import { API_ORIGIN, ApiError } from "@/shared/services/api/client";
+import { ApiError, mediaUrl } from "@/shared/services/api/client";
 import { releaseBooking } from "@/shared/services/api/public.service";
 import type {
   BookingConfirmation,
@@ -1239,7 +1239,7 @@ function BookingSummary({
       <div className="flex items-center gap-3">
         {photo ? (
           <Image
-            src={`${API_ORIGIN}${photo}`}
+            src={mediaUrl(photo)}
             alt={doctorName}
             width={48}
             height={48}

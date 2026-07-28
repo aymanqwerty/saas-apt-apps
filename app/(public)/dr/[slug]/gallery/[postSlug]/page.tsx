@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { API_ORIGIN } from "@/shared/services/api/client";
+import { mediaUrl } from "@/shared/services/api/client";
 import { fetchPublicGalleryPost } from "@/shared/services/api/public.server";
 
 function youtubeEmbed(url: string): string | null {
@@ -47,11 +47,7 @@ export default async function GalleryPostPage({
             return (
               <Image
                 key={index}
-                src={
-                  item.url.startsWith("http")
-                    ? item.url
-                    : `${API_ORIGIN}${item.url}`
-                }
+                src={mediaUrl(item.url)}
                 alt={`${post.title} ${index + 1}`}
                 width={800}
                 height={480}

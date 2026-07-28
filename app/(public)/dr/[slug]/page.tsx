@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import { ClinicCard } from "@/features/public-site/components/ClinicCard";
 import { Button } from "@/shared/components/ui/button";
-import { API_ORIGIN } from "@/shared/services/api/client";
+import { mediaUrl } from "@/shared/services/api/client";
 import {
   fetchPublicSettings,
   fetchPublicSite,
@@ -44,7 +44,7 @@ export default async function DoctorHomePage({
       <section className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
         {doctor.profile_photo && (
           <Image
-            src={`${API_ORIGIN}${doctor.profile_photo}`}
+            src={mediaUrl(doctor.profile_photo)}
             alt={doctor.full_name}
             width={128}
             height={128}
@@ -130,11 +130,7 @@ export default async function DoctorHomePage({
               >
                 {post.thumbnail ? (
                   <Image
-                    src={
-                      post.thumbnail.startsWith("http")
-                        ? post.thumbnail
-                        : `${API_ORIGIN}${post.thumbnail}`
-                    }
+                    src={mediaUrl(post.thumbnail)}
                     alt={post.title}
                     width={300}
                     height={160}
