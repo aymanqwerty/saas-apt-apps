@@ -14,7 +14,7 @@ const TITLES: Record<string, string> = {
   availability: "Availability",
   slots: "Slots",
   payments: "Payments",
-  gallery: "Success Stories",
+  gallery: "Blog",
   settings: "Website Settings",
   profile: "Profile",
 };

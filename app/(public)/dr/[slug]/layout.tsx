@@ -24,6 +24,7 @@ export default async function DoctorSiteLayout({
         slug={slug}
         doctorName={site.doctor.full_name}
         showGallery={settings?.gallery_enabled ?? true}
+        sectionLabel={settings?.section_label ?? "Success Stories"}
         showBooking={settings?.booking_enabled ?? true}
       />
       <main className="flex-1">{children}</main>

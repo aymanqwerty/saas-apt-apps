@@ -35,6 +35,7 @@ export default async function DoctorHomePage({
   if (!site) notFound();
   const settings = await fetchPublicSettings(slug);
   const bookingEnabled = settings?.booking_enabled ?? true;
+  const sectionLabel = settings?.section_label ?? "Success Stories";
 
   const { doctor, clinics, services } = site;
 
@@ -109,13 +110,13 @@ export default async function DoctorHomePage({
         </section>
       )}
 
-      {/* Gallery preview */}
+      {/* Blog section preview — heading uses the doctor's chosen wording. */}
       {site.gallery.length > 0 && (
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Success Stories</h2>
+            <h2 className="text-xl font-semibold">{sectionLabel}</h2>
             <Link
-              href={`/dr/${slug}/gallery`}
+              href={`/dr/${slug}/stories`}
               className="text-muted-foreground text-sm hover:underline"
             >
               View all
@@ -125,12 +126,12 @@ export default async function DoctorHomePage({
             {site.gallery.slice(0, 3).map((post) => (
               <Link
                 key={post.id}
-                href={`/dr/${slug}/gallery/${post.slug}`}
+                href={`/dr/${slug}/stories/${post.slug}`}
                 className="hover:bg-muted/50 flex flex-col gap-2 rounded-lg border p-3"
               >
-                {post.thumbnail ? (
+                {post.cover_image ? (
                   <Image
-                    src={mediaUrl(post.thumbnail)}
+                    src={mediaUrl(post.cover_image)}
                     alt={post.title}
                     width={300}
                     height={160}

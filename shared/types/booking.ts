@@ -34,12 +34,16 @@ export interface PublicService {
   image_url: string | null;
 }
 
+/** Same shape the blog listing returns — the /site aggregate embeds a few. */
 export interface PublicGalleryPreview {
   id: string;
   title: string;
   slug: string;
-  category: string | null;
-  thumbnail: string | null;
+  introduction: string;
+  cover_image: string | null;
+  category_name: string | null;
+  category_slug: string | null;
+  display_date: string | null;
   published_at: string | null;
 }
 

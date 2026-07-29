@@ -11,11 +11,14 @@ export function PublicNav({
   slug,
   doctorName,
   showGallery,
+  sectionLabel,
   showBooking,
 }: {
   slug: string;
   doctorName: string;
   showGallery: boolean;
+  /** Doctor-chosen wording for the blog section; the URL stays fixed. */
+  sectionLabel: string;
   showBooking: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -28,7 +31,7 @@ export function PublicNav({
     { href: `${base}/services`, label: "Services" },
     { href: `${base}/clinics`, label: "Clinics" },
     ...(showGallery
-      ? [{ href: `${base}/gallery`, label: "Success Stories" }]
+      ? [{ href: `${base}/stories`, label: sectionLabel }]
       : []),
     { href: `${base}/contact`, label: "Contact" },
   ];

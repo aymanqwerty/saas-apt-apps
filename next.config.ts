@@ -53,6 +53,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   images: {
     remotePatterns: buildRemotePatterns(),
+    // Next 16 rejects images from local IPs before remotePatterns is consulted,
+    // so a dev API on localhost:8000 fails with "url parameter is not allowed"
+    // no matter what the allowlist says. Enabled in development ONLY — in
+    // production this would be an SSRF hole into the private network, and the
+    // deployed API is a public HTTPS host that doesn't need it.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
   },
 };
 

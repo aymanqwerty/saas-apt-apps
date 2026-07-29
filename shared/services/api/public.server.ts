@@ -1,9 +1,11 @@
 import type { ApiResponse } from "@/shared/types/api";
 import type { PublicDoctorProfile, PublicSite } from "@/shared/types/booking";
 import type {
+  PublicBlogCategory,
   PublicGalleryDetail,
   PublicGalleryItem,
 } from "@/shared/types/gallery";
+import type { Page } from "@/shared/types/appointment";
 import type { DoctorSettings } from "@/shared/types/settings";
 
 const API_BASE_URL =
@@ -46,9 +48,23 @@ export function fetchPublicSettings(
 
 export function fetchPublicGallery(
   slug: string,
-): Promise<PublicGalleryItem[] | null> {
-  return fetchPublic<PublicGalleryItem[]>(
-    `/doctors/public/${encodeURIComponent(slug)}/gallery`,
+  options: { category?: string; page?: number; limit?: number } = {},
+): Promise<Page<PublicGalleryItem> | null> {
+  const params = new URLSearchParams({
+    page: String(options.page ?? 1),
+    limit: String(options.limit ?? 12),
+  });
+  if (options.category) params.set("category", options.category);
+  return fetchPublic<Page<PublicGalleryItem>>(
+    `/doctors/public/${encodeURIComponent(slug)}/gallery?${params.toString()}`,
+  );
+}
+
+export function fetchPublicGalleryCategories(
+  slug: string,
+): Promise<PublicBlogCategory[] | null> {
+  return fetchPublic<PublicBlogCategory[]>(
+    `/doctors/public/${encodeURIComponent(slug)}/gallery/categories`,
   );
 }
 
