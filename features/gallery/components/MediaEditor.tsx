@@ -18,13 +18,19 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { ApiError, mediaUrl } from "@/shared/services/api/client";
-import { uploadImage } from "@/shared/services/api/media.service";
+import {
+  ACCEPTED_VIDEO_TYPES,
+  MAX_VIDEO_BYTES,
+  uploadImage,
+  uploadVideo,
+} from "@/shared/services/api/media.service";
 
 const SELECT_CLASS =
   "border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 rounded-lg border bg-transparent px-2.5 text-sm outline-none focus-visible:ring-3";
 
 const TYPE_LABELS = {
   image: "Image",
+  video: "Video file",
   youtube: "YouTube video",
   instagram: "Instagram link",
 } as const;
@@ -64,11 +70,13 @@ export function MediaEditor({
     index: number,
     file: File,
     onUrl: (url: string) => void,
+    kind: "image" | "video" = "image",
   ) => {
     setUploadingIndex(index);
     setError(index, null);
     try {
-      const { url } = await uploadImage(file);
+      const { url } =
+        kind === "video" ? await uploadVideo(file) : await uploadImage(file);
       onUrl(url);
     } catch (error) {
       setError(
@@ -80,14 +88,34 @@ export function MediaEditor({
     }
   };
 
+  const pickVideo = (index: number, file: File) => {
+    // Checked here as well as server-side so the doctor isn't left waiting on
+    // a 25 MB upload that was always going to be rejected.
+    if (file.size > MAX_VIDEO_BYTES) {
+      setError(
+        index,
+        `That video is ${(file.size / 1024 / 1024).toFixed(0)} MB. The limit is ` +
+          `${MAX_VIDEO_BYTES / 1024 / 1024} MB — trim it, or upload it to YouTube and paste the link.`,
+      );
+      return;
+    }
+    void doUpload(
+      index,
+      file,
+      (url) => setValue(`media.${index}.url`, url, { shouldDirty: true }),
+      "video",
+    );
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <Label>Images, videos &amp; links</Label>
           <p className="text-muted-foreground text-sm">
-            Images are uploaded from your device. YouTube videos play on the
-            page; Instagram posts appear as links.
+            Images and videos upload from your device — videos must be MP4 or
+            WebM, up to {MAX_VIDEO_BYTES / 1024 / 1024} MB. For anything
+            longer, use YouTube. Instagram posts appear as embeds.
           </p>
         </div>
         <div className="flex gap-2">
@@ -103,9 +131,17 @@ export function MediaEditor({
             type="button"
             variant="outline"
             size="sm"
+            onClick={() => append({ type: "video", url: "", description: "" })}
+          >
+            Add video file
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={() => append({ type: "youtube", url: "", description: "" })}
           >
-            Add video
+            Add YouTube
           </Button>
           <Button
             type="button"
@@ -140,6 +176,7 @@ export function MediaEditor({
           onMoveDown={() => move(index, index + 1)}
           onRemove={() => remove(index)}
           onPickFile={(file) => setPendingCrop({ index, file })}
+          onPickVideo={(file) => pickVideo(index, file)}
           registerFileInput={(element) => {
             fileInputs.current[index] = element;
           }}
@@ -176,6 +213,7 @@ function MediaRow({
   onMoveDown,
   onRemove,
   onPickFile,
+  onPickVideo,
   registerFileInput,
   openFilePicker,
 }: {
@@ -190,6 +228,7 @@ function MediaRow({
   onMoveDown: () => void;
   onRemove: () => void;
   onPickFile: (file: File) => void;
+  onPickVideo: (file: File) => void;
   registerFileInput: (element: HTMLInputElement | null) => void;
   openFilePicker: () => void;
 }) {
@@ -237,7 +276,60 @@ function MediaRow({
             control={control}
             name={`media.${index}.url`}
             render={({ field: urlField }) =>
-              typeField.value === "image" ? (
+              typeField.value === "video" ? (
+                <div className="flex flex-col gap-2">
+                  {urlField.value ? (
+                    <video
+                      src={mediaUrl(urlField.value)}
+                      controls
+                      preload="metadata"
+                      className="max-h-64 w-full rounded-lg border bg-black"
+                    />
+                  ) : (
+                    <div className="bg-muted text-muted-foreground flex h-32 items-center justify-center rounded-lg border text-xs">
+                      No video
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept={ACCEPTED_VIDEO_TYPES}
+                    className="hidden"
+                    ref={registerFileInput}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) onPickVideo(file);
+                      event.target.value = "";
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploading}
+                      onClick={openFilePicker}
+                    >
+                      {uploading
+                        ? "Uploading..."
+                        : urlField.value
+                          ? "Replace video"
+                          : "Upload video"}
+                    </Button>
+                    {urlField.value && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => urlField.onChange("")}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <input type="hidden" {...register(`media.${index}.url`)} />
+                  {error && <p className="text-destructive text-xs">{error}</p>}
+                </div>
+              ) : typeField.value === "image" ? (
                 <div className="flex items-center gap-3">
                   {urlField.value ? (
                     <Image

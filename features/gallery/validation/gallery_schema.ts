@@ -20,7 +20,7 @@ export const gallerySchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "HIDDEN"]),
   media: z.array(
     z.object({
-      type: z.enum(["image", "youtube", "instagram"]),
+      type: z.enum(["image", "video", "youtube", "instagram"]),
       url: z.string().min(1, "URL is required"),
       description: z.string().max(20_000).optional(),
     }),
